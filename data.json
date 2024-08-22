@@ -1,0 +1,21 @@
+{
+  "monsters": [
+    { "id": "djinn", "texture": "djinn", "power": 10 },
+    { "id": "uma", "texture": "uma", "power": 20 },
+    { "id": "taaka", "texture": "taaka", "power": 30 },
+    { "id": "cinder", "texture": "cinder", "power": 40 },
+    { "id": "firehorse", "texture": "firehorse", "power": 50 },
+    { "id": "fireagle", "texture": "fireagle", "power": 60 },
+    { "id": "aqua_djinn", "texture": "aqua_djinn", "power": 35 },
+    { "id": "winduma", "texture": "winduma", "power": 45 },
+    { "id": "earth_taaka", "texture": "earth_taaka", "power": 55 }
+  ],
+  "evolutions": [
+    { "from": "djinn", "to": "cinder", "attribute": "火" },
+    { "from": "djinn", "to": "aqua_djinn", "attribute": "水" },
+    { "from": "uma", "to": "firehorse", "attribute": "火" },
+    { "from": "uma", "to": "winduma", "attribute": "風" },
+    { "from": "taaka", "to": "fireagle", "attribute": "火" },
+    { "from": "taaka", "to": "earth_taaka", "attribute": "土" }
+  ]
+}
