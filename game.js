@@ -15,36 +15,48 @@ const spawnInterval = 3000; // 3 seconds for spawning monsters
 const coinGenerationInterval = 10000; // 10 seconds for general coin generation
 
 async function fetchMonsterData() {
-    const response = await fetch('data.json');
-    const data = await response.json();
-    monsterData = data.monsters;
-    evolutions = data.evolutions;
+    try {
+        const response = await fetch('data.json');
+        const data = await response.json();
+        monsterData = data.monsters;
+        evolutions = data.evolutions;
+    } catch (error) {
+        console.error('Failed to fetch monster data', error);
+    }
 }
 
 function drawFrames() {
     frames.forEach((monster, index) => {
         const frame = document.getElementById(`frame${index}`);
         if (monster) {
-            const img = new Image();
-            img.src = monster.texture;
-            img.onload = () => {
-                frame.innerHTML = ''; // Clear previous image
+            if (!frame.querySelector('img')) {
+                const img = document.createElement('img');
+                img.src = monster.texture;
                 frame.appendChild(img);
-            };
+            } else {
+                frame.querySelector('img').src = monster.texture;
+            }
         } else {
             frame.innerHTML = ''; // Clear frame if empty
         }
     });
 }
 
-function spawnMonster() {
+async function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+async function spawnMonster() {
     const texture = winKunsTextures[Math.floor(Math.random() * winKunsTextures.length)];
-    const image = new Image();
-    image.src = `images/${texture}.png`;
-    image.onload = () => {
+    try {
+        const image = await loadImage(`images/${texture}.png`);
         const power = monsterData.find(monster => monster.id === texture)?.power || 10;
 
-        // Find an empty frame to place the new monster
         const emptyIndex = frames.indexOf(null);
         if (emptyIndex !== -1) {
             frames[emptyIndex] = {
@@ -58,7 +70,9 @@ function spawnMonster() {
             localStorage.setItem('frames', JSON.stringify(frames));
             drawFrames();
         }
-    };
+    } catch (error) {
+        console.error('Failed to load monster image', error);
+    }
 }
 
 function buyMonster() {
@@ -92,7 +106,7 @@ function showMonsterInfo(frameIndex) {
     }
 }
 
-function mergeMonsters(frameIndex1, frameIndex2) {
+async function mergeMonsters(frameIndex1, frameIndex2) {
     const monster1 = frames[frameIndex1];
     const monster2 = frames[frameIndex2];
 
@@ -105,10 +119,8 @@ function mergeMonsters(frameIndex1, frameIndex2) {
 
             if (nextIndex < winKunsTextures.length) {
                 const newTexture = winKunsTextures[nextIndex];
-                const newImage = new Image();
-                newImage.src = `images/${newTexture}.png`;
-
-                newImage.onload = () => {
+                try {
+                    const newImage = await loadImage(`images/${newTexture}.png`);
                     frames[frameIndex1] = {
                         x: (monster1.x + monster2.x) / 2,
                         y: (monster1.y + monster2.y) / 2,
@@ -120,7 +132,9 @@ function mergeMonsters(frameIndex1, frameIndex2) {
                     frames[frameIndex2] = null;
                     localStorage.setItem('frames', JSON.stringify(frames));
                     drawFrames();
-                };
+                } catch (error) {
+                    alert('新しいモンスター画像を読み込めませんでした');
+                }
             } else {
                 alert('これ以上マージできません');
             }
@@ -132,48 +146,38 @@ function mergeMonsters(frameIndex1, frameIndex2) {
     }
 }
 
-function evolveMonster(frameIndex, attribute) {
+async function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
-    if (monster) {
-        if (monster.attribute === attribute) {
-            const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
-            console.log(`進化対象のモンスターID: ${monsterId}`); // デバッグメッセージ
-            const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-            
-            if (evolution) {
-                console.log(`進化データ: ${JSON.stringify(evolution)}`); // デバッグメッセージ
-                const newMonster = monsterData.find(m => m.id === evolution.to);
-                if (newMonster) {
-                    const newImage = new Image();
-                    newImage.src = `images/${newMonster.texture}.png`;
-
-                    newImage.onload = () => {
-                        frames[frameIndex] = {
-                            x: monster.x,
-                            y: monster.y,
-                            image: newImage,
-                            power: newMonster.power,
-                            texture: `images/${newMonster.texture}.png`,
-                            attribute: newMonster.attribute || monster.attribute
-                        };
-                        localStorage.setItem('frames', JSON.stringify(frames));
-                        drawFrames();
+    if (monster && monster.attribute === attribute) {
+        const monsterId = monster.texture.split('/').pop().split('.')[0];
+        const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
+        
+        if (evolution) {
+            const newMonster = monsterData.find(m => m.id === evolution.to);
+            if (newMonster) {
+                try {
+                    const newImage = await loadImage(`images/${newMonster.texture}.png`);
+                    frames[frameIndex] = {
+                        x: monster.x,
+                        y: monster.y,
+                        image: newImage,
+                        power: newMonster.power,
+                        texture: `images/${newMonster.texture}.png`,
+                        attribute: newMonster.attribute || monster.attribute
                     };
-
-                    newImage.onerror = () => {
-                        alert('進化後の画像を読み込めませんでした');
-                    };
-                } else {
-                    alert('進化先のモンスターが見つかりません');
+                    localStorage.setItem('frames', JSON.stringify(frames));
+                    drawFrames();
+                } catch (error) {
+                    alert('進化後の画像を読み込めませんでした');
                 }
             } else {
-                alert('進化に必要な属性がありません');
+                alert('進化先のモンスターが見つかりません');
             }
         } else {
-            alert('指定されたフレームにモンスターがいないか、属性が一致しません');
+            alert('進化に必要な属性がありません');
         }
     } else {
-        alert('指定されたフレームが存在しません');
+        alert('指定されたフレームにモンスターがいないか、属性が一致しません');
     }
 }
 
@@ -220,21 +224,17 @@ document.getElementById('buyFire').addEventListener('click', () => buyAttributeS
 document.getElementById('buyWater').addEventListener('click', () => buyAttributeStone('水'));
 document.getElementById('buyEarth').addEventListener('click', () => buyAttributeStone('土'));
 document.getElementById('buyWind').addEventListener('click', () => buyAttributeStone('風'));
-document.getElementById('buyHeaven').addEventListener('click', () => buyAttributeStone('天'));
+document.getElementById('buySky').addEventListener('click', () => buyAttributeStone('天'));
 
 function startGame() {
-    fetchMonsterData().then(() => {
-        drawFrames();
+    updateCoins();
+    updateShop();
+    setInterval(spawnMonster, spawnInterval);
+    setInterval(() => {
+        coins += 10; // Generate coins over time
+        localStorage.setItem('coins', coins);
         updateCoins();
-        updateShop();
-
-        setInterval(spawnMonster, spawnInterval);
-        setInterval(() => {
-            coins += 10; // Example coin generation logic
-            localStorage.setItem('coins', coins);
-            updateCoins();
-        }, coinGenerationInterval);
-    });
+    }, coinGenerationInterval);
 }
 
-startGame();
+fetchMonsterData().then(startGame);
