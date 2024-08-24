@@ -153,41 +153,47 @@ async function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
     console.log(`進化させるモンスター:`, monster, `属性:`, attribute);
     
-    if (monster && monster.attribute === attribute) {
-        const monsterId = monster.texture.split('/').pop().split('.')[0];
-        console.log(`モンスターID: ${monsterId}`);
+    if (monster) {
+        // モンスターの属性が進化に必要な属性と一致するか確認
+        if (monster.attribute === attribute) {
+            const monsterId = monster.texture.split('/').pop().split('.')[0];
+            console.log(`モンスターID: ${monsterId}`);
 
-        const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-        console.log(`進化データ:`, evolution);
+            // 進化データの取得
+            const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
+            console.log(`進化データ:`, evolution);
 
-        if (evolution) {
-            const newMonster = monsterData.find(m => m.id === evolution.to);
-            console.log(`新モンスター:`, newMonster);
+            if (evolution) {
+                const newMonster = monsterData.find(m => m.id === evolution.to);
+                console.log(`新モンスター:`, newMonster);
 
-            if (newMonster) {
-                try {
-                    const newImage = await loadImage(`images/${newMonster.texture}.png`);
-                    frames[frameIndex] = {
-                        x: monster.x,
-                        y: monster.y,
-                        image: newImage,
-                        power: newMonster.power,
-                        texture: `images/${newMonster.texture}.png`,
-                        attribute: newMonster.attribute || monster.attribute
-                    };
-                    localStorage.setItem('frames', JSON.stringify(frames));
-                    drawFrames();
-                } catch (error) {
-                    alert('進化後の画像を読み込めませんでした');
+                if (newMonster) {
+                    try {
+                        const newImage = await loadImage(`images/${newMonster.texture}.png`);
+                        frames[frameIndex] = {
+                            x: monster.x,
+                            y: monster.y,
+                            image: newImage,
+                            power: newMonster.power,
+                            texture: `images/${newMonster.texture}.png`,
+                            attribute: newMonster.attribute || monster.attribute // 新しい属性があれば更新
+                        };
+                        localStorage.setItem('frames', JSON.stringify(frames));
+                        drawFrames();
+                    } catch (error) {
+                        alert('進化後の画像を読み込めませんでした');
+                    }
+                } else {
+                    alert('進化先のモンスターが見つかりません');
                 }
             } else {
-                alert('進化先のモンスターが見つかりません');
+                alert('進化に必要な属性がありません');
             }
         } else {
-            alert('進化に必要な属性がありません');
+            alert('指定されたフレームにモンスターがいないか、属性が一致しません');
         }
     } else {
-        alert('指定されたフレームにモンスターがいないか、属性が一致しません');
+        alert('指定されたフレームにモンスターが存在しません');
     }
 }
 
