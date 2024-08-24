@@ -1,21 +1,21 @@
 {
-  "monsters": [
-    { "id": "djinn", "texture": "djinn", "power": 10, "attribute": "火" },
-    { "id": "uma", "texture": "uma", "power": 20, "attribute": "火" },
-    { "id": "taaka", "texture": "taaka", "power": 30, "attribute": "土" },
-    { "id": "cinder", "texture": "cinder", "power": 40, "attribute": "火" },
-    { "id": "firehorse", "texture": "firehorse", "power": 50, "attribute": "火" },
-    { "id": "fireagle", "texture": "fireagle", "power": 60, "attribute": "火" },
-    { "id": "aqua_djinn", "texture": "aqua_djinn", "power": 35, "attribute": "水" },
-    { "id": "winduma", "texture": "winduma", "power": 45, "attribute": "風" },
-    { "id": "earth_taaka", "texture": "earth_taaka", "power": 55, "attribute": "土" }
-  ],
-  "evolutions": [
-    { "from": "djinn", "to": "cinder", "attribute": "火" },
-    { "from": "djinn", "to": "aqua_djinn", "attribute": "水" },
-    { "from": "uma", "to": "firehorse", "attribute": "火" },
-    { "from": "uma", "to": "winduma", "attribute": "風" },
-    { "from": "taaka", "to": "fireagle", "attribute": "火" },
-    { "from": "taaka", "to": "earth_taaka", "attribute": "土" }
-  ]
+    "monsters": [
+        { "id": "djinn", "texture": "djinn.png", "power": 10, "attribute": "火" },
+        { "id": "uma", "texture": "uma.png", "power": 20, "attribute": "火" },
+        { "id": "taaka", "texture": "taaka.png", "power": 30, "attribute": "土" },
+        { "id": "cinder", "texture": "cinder.png", "power": 40, "attribute": "火" },
+        { "id": "firehorse", "texture": "firehorse.png", "power": 50, "attribute": "火" },
+        { "id": "fireagle", "texture": "fireagle.png", "power": 60, "attribute": "火" },
+        { "id": "aqua_djinn", "texture": "aqua_djinn.png", "power": 35, "attribute": "水" },
+        { "id": "winduma", "texture": "winduma.png", "power": 45, "attribute": "風" },
+        { "id": "earth_taaka", "texture": "earth_taaka.png", "power": 55, "attribute": "土" }
+    ],
+    "evolutions": [
+        { "from": "djinn", "to": "cinder", "attribute": "火" },
+        { "from": "djinn", "to": "aqua_djinn", "attribute": "水" },
+        { "from": "uma", "to": "firehorse", "attribute": "火" },
+        { "from": "uma", "to": "winduma", "attribute": "風" },
+        { "from": "taaka", "to": "fireagle", "attribute": "火" },
+        { "from": "taaka", "to": "earth_taaka", "attribute": "土" }
+    ]
 }
