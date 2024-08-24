@@ -17,6 +17,7 @@ const coinGenerationInterval = 10000; // 10 seconds for general coin generation
 async function fetchMonsterData() {
     try {
         const response = await fetch('data.json');
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         monsterData = data.monsters;
         evolutions = data.evolutions;
@@ -46,7 +47,7 @@ async function loadImage(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        img.onerror = reject;
+        img.onerror = () => reject(new Error(`Failed to load image at ${src}`));
         img.src = src;
     });
 }
@@ -83,6 +84,8 @@ function buyMonster() {
         localStorage.setItem('winPrice', winPrice);
         document.getElementById('price').innerText = winPrice;
         updateShop();
+    } else {
+        alert('コインが足りません');
     }
 }
 
@@ -207,16 +210,28 @@ document.getElementById('buyMonster').addEventListener('click', buyMonster);
 document.getElementById('mergeMonster').addEventListener('click', () => {
     const frameIndex1 = parseInt(prompt('最初のフレーム番号を入力してください (例: 0)'));
     const frameIndex2 = parseInt(prompt('2つ目のフレーム番号を入力してください (例: 1)'));
-    mergeMonsters(frameIndex1, frameIndex2);
+    if (!isNaN(frameIndex1) && !isNaN(frameIndex2)) {
+        mergeMonsters(frameIndex1, frameIndex2);
+    } else {
+        alert('無効なフレーム番号です');
+    }
 });
 document.getElementById('deleteMonster').addEventListener('click', () => {
     const frameIndex = parseInt(prompt('削除するフレーム番号を入力してください (例: 0)'));
-    deleteMonster(frameIndex);
+    if (!isNaN(frameIndex)) {
+        deleteMonster(frameIndex);
+    } else {
+        alert('無効なフレーム番号です');
+    }
 });
 document.getElementById('evolveMonster').addEventListener('click', () => {
     const frameIndex = parseInt(prompt('進化させるモンスターのフレーム番号を入力してください (例: 0)'));
     const attribute = prompt('進化に必要な属性を入力してください (例: 火)');
-    evolveMonster(frameIndex, attribute);
+    if (!isNaN(frameIndex) && attribute) {
+        evolveMonster(frameIndex, attribute);
+    } else {
+        alert('無効な入力です');
+    }
 });
 document.getElementById('resetGame').addEventListener('click', resetGame);
 
