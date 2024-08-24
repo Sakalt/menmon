@@ -21,6 +21,8 @@ async function fetchMonsterData() {
         const data = await response.json();
         monsterData = data.monsters;
         evolutions = data.evolutions;
+        console.log('Monster Data:', monsterData);
+        console.log('Evolutions:', evolutions);
     } catch (error) {
         console.error('Failed to fetch monster data:', error);
     }
@@ -141,36 +143,41 @@ function mergeMonsters(frameIndex1, frameIndex2) {
 
 function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
-    if (monster && monster.attribute === attribute) {
-        const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
-        const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-        
-        if (evolution) {
-            const newMonster = monsterData.find(m => m.id === evolution.to);
-            if (newMonster) {
-                const newImage = new Image();
-                newImage.src = `images/${newMonster.texture}.png`;
-                
-                newImage.onload = () => {
-                    frames[frameIndex] = {
-                        x: monster.x,
-                        y: monster.y,
-                        image: newImage,
-                        power: newMonster.power,
-                        texture: `images/${newMonster.texture}.png`,
-                        attribute: newMonster.attribute || monster.attribute
+    if (monster) {
+        console.log(`Monster Attribute: ${monster.attribute}, Required Attribute: ${attribute}`);
+        if (monster.attribute === attribute) {
+            const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
+            const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
+            
+            if (evolution) {
+                const newMonster = monsterData.find(m => m.id === evolution.to);
+                if (newMonster) {
+                    const newImage = new Image();
+                    newImage.src = `images/${newMonster.texture}.png`;
+                    
+                    newImage.onload = () => {
+                        frames[frameIndex] = {
+                            x: monster.x,
+                            y: monster.y,
+                            image: newImage,
+                            power: newMonster.power,
+                            texture: `images/${newMonster.texture}.png`,
+                            attribute: newMonster.attribute || monster.attribute
+                        };
+                        localStorage.setItem('frames', JSON.stringify(frames));
+                        drawFrames();
                     };
-                    localStorage.setItem('frames', JSON.stringify(frames));
-                    drawFrames();
-                };
+                } else {
+                    alert('進化先のモンスターが見つかりません');
+                }
             } else {
-                alert('進化先のモンスターが見つかりません');
+                alert('進化に必要な属性がありません');
             }
         } else {
-            alert('進化に必要な属性がありません');
+            alert('属性が一致しません');
         }
     } else {
-        alert('指定されたフレームにモンスターがいないか、属性が一致しません');
+        alert('指定されたフレームにモンスターがいない');
     }
 }
 
@@ -219,19 +226,14 @@ document.getElementById('buyEarth').addEventListener('click', () => buyAttribute
 document.getElementById('buyWind').addEventListener('click', () => buyAttributeStone('風'));
 document.getElementById('buyHeaven').addEventListener('click', () => buyAttributeStone('天'));
 
-function startGame() {
-    fetchMonsterData().then(() => {
-        drawFrames();
-        updateCoins();
-        updateShop();
+setInterval(spawnMonster, spawnInterval);
+setInterval(() => {
+    coins += 10; // Automatically add coins every 10 seconds
+    localStorage.setItem('coins', coins);
+    updateCoins();
+}, coinGenerationInterval);
 
-        setInterval(spawnMonster, spawnInterval);
-        setInterval(() => {
-            coins += 10; // Example coin generation logic
-            localStorage.setItem('coins', coins);
-            updateCoins();
-        }, coinGenerationInterval);
-    });
-}
-
-startGame();
+fetchMonsterData();
+updateCoins();
+updateShop();
+drawFrames();
