@@ -134,40 +134,44 @@ function mergeMonsters(frameIndex1, frameIndex2) {
 
 function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
-    if (monster && monster.attribute === attribute) {
-        const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
-        const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
+    if (monster) {
+        if (monster.attribute === attribute) {
+            const monsterId = monster.texture; // 修正: IDの取得方法
+            const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
 
-        if (evolution) {
-            const newMonster = monsterData.find(m => m.id === evolution.to);
-            if (newMonster) {
-                const newImage = new Image();
-                newImage.src = `images/${newMonster.texture}.png`;
+            if (evolution) {
+                const newMonster = monsterData.find(m => m.id === evolution.to);
+                if (newMonster) {
+                    const newImage = new Image();
+                    newImage.src = `images/${newMonster.texture}.png`;
 
-                newImage.onload = () => {
-                    frames[frameIndex] = {
-                        x: monster.x,
-                        y: monster.y,
-                        image: newImage,
-                        power: newMonster.power,
-                        texture: `images/${newMonster.texture}.png`,
-                        attribute: newMonster.attribute || monster.attribute
+                    newImage.onload = () => {
+                        frames[frameIndex] = {
+                            x: monster.x,
+                            y: monster.y,
+                            image: newImage,
+                            power: newMonster.power,
+                            texture: `images/${newMonster.texture}.png`,
+                            attribute: newMonster.attribute || monster.attribute
+                        };
+                        localStorage.setItem('frames', JSON.stringify(frames));
+                        drawFrames();
                     };
-                    localStorage.setItem('frames', JSON.stringify(frames));
-                    drawFrames();
-                };
 
-                newImage.onerror = () => {
-                    alert('進化後の画像を読み込めませんでした');
-                };
+                    newImage.onerror = () => {
+                        alert('進化後の画像を読み込めませんでした');
+                    };
+                } else {
+                    alert('進化先のモンスターが見つかりません');
+                }
             } else {
-                alert('進化先のモンスターが見つかりません');
+                alert('進化に必要な属性がありません');
             }
         } else {
-            alert('進化に必要な属性がありません');
+            alert('指定されたフレームにモンスターがいないか、属性が一致しません');
         }
     } else {
-        alert('指定されたフレームにモンスターがいないか、属性が一致しません');
+        alert('指定されたフレームが存在しません');
     }
 }
 
