@@ -159,18 +159,13 @@ async function mergeMonsters(frameIndex1, frameIndex2) {
 
 async function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
-    console.log(`進化させるモンスター:`, monster, `属性:`, attribute);
     
     if (monster && monster.attribute === attribute) {
         const monsterId = monster.texture.split('/').pop().split('.')[0];
-        console.log(`モンスターID: ${monsterId}`);
-
         const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-        console.log(`進化データ:`, evolution);
 
         if (evolution) {
             const newMonster = monsterData.find(m => m.id === evolution.to);
-            console.log(`新モンスター:`, newMonster);
 
             if (newMonster) {
                 try {
@@ -227,44 +222,29 @@ document.getElementById('mergeMonster').addEventListener('click', () => {
     const frameIndex2 = parseInt(prompt('2つ目のフレーム番号を入力してください (例: 1)'));
     if (!isNaN(frameIndex1) && !isNaN(frameIndex2)) {
         mergeMonsters(frameIndex1, frameIndex2);
-    } else {
-        alert('無効なフレーム番号です');
+    }
+});
+document.getElementById('evolveMonster').addEventListener('click', () => {
+    const frameIndex = parseInt(prompt('進化させるフレーム番号を入力してください (例: 0)'));
+    const attribute = prompt('属性を入力してください (火、水、土、風、天)');
+    if (!isNaN(frameIndex) && attribute) {
+        evolveMonster(frameIndex, attribute);
     }
 });
 document.getElementById('deleteMonster').addEventListener('click', () => {
     const frameIndex = parseInt(prompt('削除するフレーム番号を入力してください (例: 0)'));
     if (!isNaN(frameIndex)) {
         deleteMonster(frameIndex);
-    } else {
-        alert('無効なフレーム番号です');
-    }
-});
-document.getElementById('evolveMonster').addEventListener('click', () => {
-    const frameIndex = parseInt(prompt('進化させるモンスターのフレーム番号を入力してください (例: 0)'));
-    const attribute = prompt('進化に必要な属性を入力してください (例: 火)');
-    if (!isNaN(frameIndex) && attribute) {
-        evolveMonster(frameIndex, attribute);
-    } else {
-        alert('無効な入力です');
     }
 });
 document.getElementById('resetGame').addEventListener('click', resetGame);
 
-document.getElementById('buyFire').addEventListener('click', () => buyAttributeStone('火'));
-document.getElementById('buyWater').addEventListener('click', () => buyAttributeStone('水'));
-document.getElementById('buyEarth').addEventListener('click', () => buyAttributeStone('土'));
-document.getElementById('buyWind').addEventListener('click', () => buyAttributeStone('風'));
-document.getElementById('buySky').addEventListener('click', () => buyAttributeStone('天'));
-
-async function init() {
-    await fetchMonsterData();
+fetchMonsterData().then(() => {
+    drawFrames();
     setInterval(spawnMonster, spawnInterval);
     setInterval(() => {
-        coins += 10; // Coins are generated periodically
+        coins += 10;
         localStorage.setItem('coins', coins);
         updateCoins();
     }, coinGenerationInterval);
-    drawFrames();
-}
-
-init();
+});
