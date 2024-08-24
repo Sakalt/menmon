@@ -137,13 +137,13 @@ function evolveMonster(frameIndex, attribute) {
     if (monster && monster.attribute === attribute) {
         const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
         const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-        
+
         if (evolution) {
             const newMonster = monsterData.find(m => m.id === evolution.to);
             if (newMonster) {
                 const newImage = new Image();
                 newImage.src = `images/${newMonster.texture}.png`;
-                
+
                 newImage.onload = () => {
                     frames[frameIndex] = {
                         x: monster.x,
@@ -155,6 +155,10 @@ function evolveMonster(frameIndex, attribute) {
                     };
                     localStorage.setItem('frames', JSON.stringify(frames));
                     drawFrames();
+                };
+
+                newImage.onerror = () => {
+                    alert('進化後の画像を読み込めませんでした');
                 };
             } else {
                 alert('進化先のモンスターが見つかりません');
