@@ -136,10 +136,12 @@ function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
     if (monster) {
         if (monster.attribute === attribute) {
-            const monsterId = monster.texture; // 修正: IDの取得方法
+            const monsterId = monster.texture.split('/').pop().split('.')[0]; // テクスチャIDを取得
+            console.log(`進化対象のモンスターID: ${monsterId}`); // デバッグメッセージ
             const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-
+            
             if (evolution) {
+                console.log(`進化データ: ${JSON.stringify(evolution)}`); // デバッグメッセージ
                 const newMonster = monsterData.find(m => m.id === evolution.to);
                 if (newMonster) {
                     const newImage = new Image();
