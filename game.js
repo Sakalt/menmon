@@ -151,12 +151,19 @@ async function mergeMonsters(frameIndex1, frameIndex2) {
 
 async function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
+    console.log(`進化させるモンスター:`, monster, `属性:`, attribute);
+    
     if (monster && monster.attribute === attribute) {
         const monsterId = monster.texture.split('/').pop().split('.')[0];
+        console.log(`モンスターID: ${monsterId}`);
+
         const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-        
+        console.log(`進化データ:`, evolution);
+
         if (evolution) {
             const newMonster = monsterData.find(m => m.id === evolution.to);
+            console.log(`新モンスター:`, newMonster);
+
             if (newMonster) {
                 try {
                     const newImage = await loadImage(`images/${newMonster.texture}.png`);
