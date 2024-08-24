@@ -213,6 +213,19 @@ function updateShop() {
     document.getElementById('availableMonsters').innerText = `利用可能: ${frames.filter(frame => frame !== null).length}`;
 }
 
+function startGame() {
+    updateCoins();
+    updateShop();
+    setInterval(spawnMonster, spawnInterval);
+    setInterval(() => {
+        coins += 10; // Generate coins over time
+        localStorage.setItem('coins', coins);
+        updateCoins();
+    }, coinGenerationInterval);
+}
+
+fetchMonsterData().then(startGame);
+
 document.getElementById('buyMonster').addEventListener('click', buyMonster);
 document.getElementById('mergeMonster').addEventListener('click', () => {
     const frameIndex1 = parseInt(prompt('最初のフレーム番号を入力してください (例: 0)'));
@@ -247,16 +260,3 @@ document.getElementById('buyWater').addEventListener('click', () => buyAttribute
 document.getElementById('buyEarth').addEventListener('click', () => buyAttributeStone('土'));
 document.getElementById('buyWind').addEventListener('click', () => buyAttributeStone('風'));
 document.getElementById('buySky').addEventListener('click', () => buyAttributeStone('天'));
-
-function startGame() {
-    updateCoins();
-    updateShop();
-    setInterval(spawnMonster, spawnInterval);
-    setInterval(() => {
-        coins += 10; // Generate coins over time
-        localStorage.setItem('coins', coins);
-        updateCoins();
-    }, coinGenerationInterval);
-}
-
-fetchMonsterData().then(startGame);
