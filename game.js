@@ -14,6 +14,8 @@ const winSize = 60;
 const spawnInterval = 3000; // 3 seconds for spawning monsters
 const coinGenerationInterval = 10000; // 10 seconds for general coin generation
 
+const imageCache = {}; // 画像キャッシュ用オブジェクト
+
 async function fetchMonsterData() {
     try {
         const response = await fetch('data.json');
@@ -44,9 +46,15 @@ function drawFrames() {
 }
 
 async function loadImage(src) {
+    if (imageCache[src]) {
+        return imageCache[src];
+    }
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve(img);
+        img.onload = () => {
+            imageCache[src] = img;
+            resolve(img);
+        };
         img.onerror = () => reject(new Error(`Failed to load image at ${src}`));
         img.src = src;
     });
@@ -153,47 +161,41 @@ async function evolveMonster(frameIndex, attribute) {
     const monster = frames[frameIndex];
     console.log(`進化させるモンスター:`, monster, `属性:`, attribute);
     
-    if (monster) {
-        // モンスターの属性が進化に必要な属性と一致するか確認
-        if (monster.attribute === attribute) {
-            const monsterId = monster.texture.split('/').pop().split('.')[0];
-            console.log(`モンスターID: ${monsterId}`);
+    if (monster && monster.attribute === attribute) {
+        const monsterId = monster.texture.split('/').pop().split('.')[0];
+        console.log(`モンスターID: ${monsterId}`);
 
-            // 進化データの取得
-            const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
-            console.log(`進化データ:`, evolution);
+        const evolution = evolutions.find(evo => evo.from === monsterId && evo.attribute === attribute);
+        console.log(`進化データ:`, evolution);
 
-            if (evolution) {
-                const newMonster = monsterData.find(m => m.id === evolution.to);
-                console.log(`新モンスター:`, newMonster);
+        if (evolution) {
+            const newMonster = monsterData.find(m => m.id === evolution.to);
+            console.log(`新モンスター:`, newMonster);
 
-                if (newMonster) {
-                    try {
-                        const newImage = await loadImage(`images/${newMonster.texture}.png`);
-                        frames[frameIndex] = {
-                            x: monster.x,
-                            y: monster.y,
-                            image: newImage,
-                            power: newMonster.power,
-                            texture: `images/${newMonster.texture}.png`,
-                            attribute: newMonster.attribute || monster.attribute // 新しい属性があれば更新
-                        };
-                        localStorage.setItem('frames', JSON.stringify(frames));
-                        drawFrames();
-                    } catch (error) {
-                        alert('進化後の画像を読み込めませんでした');
-                    }
-                } else {
-                    alert('進化先のモンスターが見つかりません');
+            if (newMonster) {
+                try {
+                    const newImage = await loadImage(`images/${newMonster.texture}.png`);
+                    frames[frameIndex] = {
+                        x: monster.x,
+                        y: monster.y,
+                        image: newImage,
+                        power: newMonster.power,
+                        texture: `images/${newMonster.texture}.png`,
+                        attribute: newMonster.attribute || monster.attribute
+                    };
+                    localStorage.setItem('frames', JSON.stringify(frames));
+                    drawFrames();
+                } catch (error) {
+                    alert('進化後の画像を読み込めませんでした');
                 }
             } else {
-                alert('進化に必要な属性がありません');
+                alert('進化先のモンスターが見つかりません');
             }
         } else {
-            alert('指定されたフレームにモンスターがいないか、属性が一致しません');
+            alert('進化に必要な属性がありません');
         }
     } else {
-        alert('指定されたフレームにモンスターが存在しません');
+        alert('指定されたフレームにモンスターがいないか、属性が一致しません');
     }
 }
 
@@ -218,19 +220,6 @@ function updateShop() {
     document.getElementById('price').innerText = winPrice;
     document.getElementById('availableMonsters').innerText = `利用可能: ${frames.filter(frame => frame !== null).length}`;
 }
-
-function startGame() {
-    updateCoins();
-    updateShop();
-    setInterval(spawnMonster, spawnInterval);
-    setInterval(() => {
-        coins += 10; // Generate coins over time
-        localStorage.setItem('coins', coins);
-        updateCoins();
-    }, coinGenerationInterval);
-}
-
-fetchMonsterData().then(startGame);
 
 document.getElementById('buyMonster').addEventListener('click', buyMonster);
 document.getElementById('mergeMonster').addEventListener('click', () => {
@@ -266,3 +255,16 @@ document.getElementById('buyWater').addEventListener('click', () => buyAttribute
 document.getElementById('buyEarth').addEventListener('click', () => buyAttributeStone('土'));
 document.getElementById('buyWind').addEventListener('click', () => buyAttributeStone('風'));
 document.getElementById('buySky').addEventListener('click', () => buyAttributeStone('天'));
+
+async function init() {
+    await fetchMonsterData();
+    setInterval(spawnMonster, spawnInterval);
+    setInterval(() => {
+        coins += 10; // Coins are generated periodically
+        localStorage.setItem('coins', coins);
+        updateCoins();
+    }, coinGenerationInterval);
+    drawFrames();
+}
+
+init();
